@@ -14,7 +14,7 @@ Integration_tp/
 ├── lib/
 │   └── venv/                        ← Environnement virtuel Python
 │
-├── openfoodfacts_etl_v5_2.ipynb     ← Notebook principal
+├── openfoodfacts_etl_v6.ipynb     ← Notebook principal
 ├── requirements.txt
 ├── README.md
 └── .gitignore
