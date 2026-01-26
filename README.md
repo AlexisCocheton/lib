@@ -9,7 +9,7 @@ Integration_tp/
 │
 ├── data/
 │   └── bronze/
-│       └── en.openfoodfacts.org.products_echantillon_3000.csv  ← METTRE LE FICHIER ICI
+│       └── en.openfoodfacts.org.products_echantillon_10000.csv  ← METTRE LE FICHIER ICI
 │
 ├── lib/
 │   └── venv/                        ← Environnement virtuel Python
