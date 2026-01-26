@@ -11,16 +11,6 @@ Integration_tp/
 │   └── bronze/
 │       └── en.openfoodfacts.org.products_echantillon_3000.csv  ← METTRE LE FICHIER ICI
 │
-├── output/                          ← Fichiers générés automatiquement
-│   ├── silver_products.csv
-│   ├── dim_brand.csv
-│   ├── dim_country.csv
-│   ├── dim_category.csv
-│   ├── dim_time.csv
-│   ├── dim_product.csv
-│   ├── fact_nutrition_snapshot.csv
-│   └── quality_metrics.json
-│
 ├── lib/
 │   └── venv/                        ← Environnement virtuel Python
 │
@@ -72,6 +62,11 @@ Par défaut, le notebook cherche :
 en.openfoodfacts.org.products_echantillon_10000.csv
 ```
 
+### Configuration
+```
+Le driver postgresql-42.7.9 dois etre place a l'emplacement suivant: venv\Lib\site-packages\pyspark\jars
+```
+
 ### Modifier le fichier source
 
 Pour utiliser un autre fichier, modifier la **CELLULE 3** du notebook :
@@ -99,20 +94,6 @@ Le notebook détecte **automatiquement** le séparateur :
 - `\t` (tabulation)
 - `,` (virgule)
 
-## Fichiers de Sortie
-
-Tous les fichiers sont générés dans le dossier `output/` :
-
-| Fichier | Description |
-|---------|-------------|
-| `silver_products.csv` | Données nettoyées et validées |
-| `dim_brand.csv` | Dimension marques |
-| `dim_country.csv` | Dimension pays |
-| `dim_category.csv` | Dimension catégories |
-| `dim_time.csv` | Dimension temps |
-| `dim_product.csv` | Dimension produits |
-| `fact_nutrition_snapshot.csv` | Table de faits nutritionnelles |
-| `quality_metrics.json` | Métriques de qualité |
 
 ## 🔧 Pipeline ETL
 
