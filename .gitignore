@@ -1,0 +1,157 @@
+# ============================================
+# .gitignore - Projet ETL OpenFoodFacts
+# TRDE703 - Atelier Integration des Donnees
+# ============================================
+
+# ============================================
+# PYTHON
+# ============================================
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Environnements virtuels
+venv/
+ENV/
+env/
+.venv/
+
+# ============================================
+# JUPYTER NOTEBOOK
+# ============================================
+.ipynb_checkpoints/
+*.ipynb_checkpoints
+*/.ipynb_checkpoints/*
+
+# ============================================
+# DONNEES (fichiers volumineux)
+# ============================================
+data/bronze/*.csv
+data/bronze/*.tsv
+data/bronze/*.json
+data/bronze/*.jsonl
+*.parquet
+*.avro
+*.gz
+*.zip
+*.tar
+*.rar
+
+# Conserver la structure des dossiers
+!data/.gitkeep
+!data/bronze/.gitkeep
+
+# ============================================
+# SPARK
+# ============================================
+spark-warehouse/
+metastore_db/
+derby.log
+*.log
+
+# ============================================
+# IDE
+# ============================================
+# VSCode
+.vscode/
+*.code-workspace
+
+# PyCharm
+.idea/
+*.iml
+*.iws
+*.ipr
+
+# Eclipse
+.project
+.pydevproject
+.settings/
+
+# Sublime Text
+*.sublime-project
+*.sublime-workspace
+
+# ============================================
+# OS
+# ============================================
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# Linux
+*~
+.directory
+
+# ============================================
+# FICHIERS DE CONFIGURATION LOCAUX
+# ============================================
+# Ne pas commiter les mots de passe !
+config.local.py
+*.local.py
+.env
+.env.local
+secrets.py
+credentials.py
+
+# ============================================
+# OUTPUTS ET TEMPORAIRES
+# ============================================
+output/
+outputs/
+tmp/
+temp/
+*.tmp
+*.temp
+*.bak
+*.swp
+
+# Metriques generees
+metrics_*.json
+quality_report_*.json
+
+# ============================================
+# POSTGRESQL
+# ============================================
+*.sql.bak
+*.dump
+
+# ============================================
+# DOCUMENTATION GENEREE
+# ============================================
+docs/_build/
+site/
+
+# ============================================
+# TESTS
+# ============================================
+.coverage
+htmlcov/
+.pytest_cache/
+.tox/
+nosetests.xml
+coverage.xml
