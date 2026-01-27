@@ -43,6 +43,11 @@ source lib/venv/bin/activate
 pip install -r requirements.txt
 ```
 
+### 3.5 Configurer postgres
+```
+DB_PASSWORD = "postgres"  # Mots de passe par defaut, a modifier selon votre configuration
+```
+
 ### 4. Lancer Jupyter
 ```bash
 jupyter notebook
