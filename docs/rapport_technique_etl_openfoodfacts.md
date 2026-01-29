@@ -458,7 +458,7 @@ CREATE INDEX idx_product_category ON dim_product(primary_category_sk);
 - ✅ **Maintenabilité** : Code structuré Bronze/Silver/Gold
 - ✅ **Qualité** : Règles métier explicites et auditables
 
-### 8.4 Livrables du projet
+### 8.3 Livrables du projet
 
 | Fichier | Description |
 |---------|-------------|
