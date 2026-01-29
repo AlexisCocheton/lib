@@ -2,24 +2,6 @@
 
 Projet de création d'un datamart nutritionnel à partir des données OpenFoodFacts avec PySpark.
 
-## Structure du Projet
-
-```
-Integration_tp/
-│
-├── data/
-│   └── bronze/
-│       └── en.openfoodfacts.org.products_echantillon_10000.csv  ← METTRE LE FICHIER ICI
-│
-├── lib/
-│   └── venv/                        ← Environnement virtuel Python
-│
-├── openfoodfacts_etl_v6.ipynb     ← Notebook principal
-├── requirements.txt
-├── README.md
-└── .gitignore
-```
-
 ## Installation
 
 ### 1. Créer l'environnement virtuel
