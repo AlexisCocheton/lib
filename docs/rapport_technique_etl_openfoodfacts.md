@@ -30,7 +30,7 @@ Le projet consiste à construire un **datamart nutritionnel** à partir des donn
 
 | Objectif | Description |
 |----------|-------------|
-| **Collecte** | Ingestion de fichiers CSV volumineux (+3M produits) |
+| **Collecte** | Ingestion de fichiers CSV volumineux (+4M produits) |
 | **Qualité** | Nettoyage, validation et enrichissement des données |
 | **Modélisation** | Schéma en étoile optimisé pour l'analyse OLAP |
 | **Chargement** | Alimentation d'un datamart PostgreSQL |
@@ -63,7 +63,7 @@ Le projet consiste à construire un **datamart nutritionnel** à partir des donn
 │   └──────────┘      └──────────┘      └──────────┘      └──────────┘    │
 │                                                                │        │
 │   Fichier OFF       DataFrame        DataFrame           PostgreSQL     │
-│   (3M lignes)       Spark            Spark               Datamart       │
+│   (4M lignes)       Spark            Spark               Datamart       │
 │                                                                         │
 └─────────────────────────────────────────────────────────────────────────┘
 ```
@@ -77,41 +77,6 @@ Le projet consiste à construire un **datamart nutritionnel** à partir des donn
 | **Base cible** | PostgreSQL 15+ | Datamart OLAP |
 | **Connecteur** | JDBC (postgresql-42.x.jar) | Chargement |
 | **Orchestration** | Jupyter Notebook | Exécution interactive |
-
-### 2.3 Flux de données
-
-```
-CSV Source
-    │
-    ▼ spark.read.csv()
-┌─────────────────┐
-│     BRONZE      │  • Lecture avec schéma explicite
-│   (df_raw)      │  • Pas d'inferSchema (performance)
-│                 │  • 10,000 lignes
-└────────┬────────┘
-         │
-         ▼ select() + clean_numeric()
-┌─────────────────┐
-│     SILVER      │  • Filtrage code/nom obligatoires
-│   (df_silver)   │  • Déduplication par last_modified_t
-│                 │  • Règles de qualité (bornes, cohérence)
-│                 │  • ~7,000 lignes (70% rétention)
-└────────┬────────┘
-         │
-         ▼ Modélisation dimensionnelle
-┌─────────────────┐
-│      GOLD       │  • dim_time, dim_brand, dim_country
-│  (dimensions    │  • dim_category, dim_product, dim_nutri
-│   + facts)      │  • bridge_product_category
-│                 │  • fact_nutrition_snapshot
-└────────┬────────┘
-         │
-         ▼ JDBC write (mode="append")
-┌─────────────────┐
-│   POSTGRESQL    │  • TRUNCATE CASCADE avant INSERT
-│   (Datamart)    │  • Contraintes FK + Index
-└─────────────────┘
-```
 
 ---
 
@@ -129,29 +94,13 @@ CSV Source
 
 **Choix** : Apache Spark pour sa capacité à traiter des volumes importants avec un code maintenable.
 
-### 3.2 Pipeline in-memory vs fichiers intermédiaires
-
-**Option A : Fichiers intermédiaires (rejetée)**
-```
-CSV → Bronze.parquet → Silver.parquet → Gold.parquet → PostgreSQL
-        ↓                   ↓                ↓
-    Écriture disk      Écriture disk    Écriture disk
-```
-
-**Option B : In-memory (choisie)**
-```
-CSV → DataFrame Bronze → DataFrame Silver → DataFrame Gold → PostgreSQL
-              ↓                  ↓                 ↓
-          En mémoire        En mémoire        En mémoire
-```
-
 **Justification** :
 - ✅ Performance : pas d'I/O disque intermédiaire
 - ✅ Simplicité : moins de fichiers à gérer
 - ✅ Idempotence : chaque exécution repart de zéro
 - ⚠️ Trade-off : nécessite suffisamment de RAM
 
-### 3.3 Schéma explicite vs inferSchema
+### 3.2 Schéma explicite vs inferSchema
 
 **Choix** : `inferSchema=false` avec typage explicite
 
@@ -174,7 +123,7 @@ df = df.select(
 - ✅ Contrôle : types garantis
 - ✅ Robustesse : gestion des cas limites (virgules, URLs...)
 
-### 3.4 Fonction de nettoyage numérique
+### 3.3 Fonction de nettoyage numérique
 
 ```python
 def clean_numeric(col_name):
@@ -322,7 +271,7 @@ FROM NEW;
 ┌─────────────┐              ┌───────┴───────┐              ┌─────────────┐
 │ dim_brand   │              │    FACT       │              │dim_category │
 │─────────────│              │  nutrition    │              │─────────────│
-│brand_sk (PK)│◄─────────────│  snapshot     │─────────────▶│category_sk  │
+│brand_sk (PK)│◄─────────────│  snapshot     │────────────▶│ category_sk  │
 │ brand_name  │              │───────────────│              │category_code│
 └─────────────┘              │ fact_id (PK)  │              │ level       │
                              │ product_sk(FK)│              └─────────────┘
@@ -458,32 +407,7 @@ df = df.filter(F.col("_rank") == 1).drop("_rank")
 - Plus fiable que `last_modified_datetime` (format variable)
 - Permet un tri déterministe
 
-### 6.3 Métriques Before/After
-
-```
-┌─────────────────────────────────────────────────────────────────┐
-│            COMPARATIF QUALITÉ : BEFORE vs AFTER                  │
-├─────────────────────────────────────────────────────────────────┤
-│                                                                  │
-│  Indicateur                    BEFORE      AFTER       DELTA     │
-│  ─────────────────────────────────────────────────────────────  │
-│  Nombre de lignes              10,000      7,234      -2,766    │
-│  Complétude globale (%)         52.7%      78.9%      +26.2%    │
-│  Complétude nutriments (%)      48.3%      85.1%      +36.8%    │
-│                                                                  │
-│  Anomalies corrigées:                                           │
-│  • Codes vides supprimés:           45                          │
-│  • Noms vides supprimés:           312                          │
-│  • Doublons éliminés:              847                          │
-│  • Valeurs hors bornes:            156 → NULL                   │
-│  • Incohérences sat>fat:            23 → NULL                   │
-│                                                                  │
-│  >>> TOTAL ANOMALIES TRAITÉES:   1,383                          │
-│                                                                  │
-└─────────────────────────────────────────────────────────────────┘
-```
-
-### 6.4 Score de complétude
+### 6.3 Score de complétude
 
 ```python
 df = df.withColumn("completeness_score",
@@ -501,16 +425,7 @@ df = df.withColumn("completeness_score",
 
 ## 7. Performance et optimisations
 
-### 7.1 Optimisations Spark
-
-| Technique | Implementation | Gain |
-|-----------|----------------|------|
-| **Pas d'inferSchema** | `inferSchema=false` | -30% temps lecture |
-| **Projection précoce** | `select()` après lecture | Moins de données en mémoire |
-| **Cache si réutilisation** | `df_silver.cache()` | Évite recalcul |
-| **Broadcast join** | Petites dimensions | Évite shuffle |
-
-### 7.2 Optimisations PostgreSQL
+### 7.1 Optimisations PostgreSQL
 
 ```sql
 -- Index créés pour les requêtes analytiques
@@ -519,17 +434,6 @@ CREATE INDEX idx_fact_time ON fact_nutrition_snapshot(time_sk);
 CREATE INDEX idx_product_brand ON dim_product(brand_sk);
 CREATE INDEX idx_product_category ON dim_product(primary_category_sk);
 ```
-
-### 7.3 Benchmarks
-
-| Étape | Durée (10K lignes) | Durée estimée (3M lignes) |
-|-------|-------------------|---------------------------|
-| Lecture CSV | 2s | ~5 min |
-| Transformation Silver | 5s | ~10 min |
-| Création dimensions | 3s | ~5 min |
-| Chargement PostgreSQL | 4s | ~15 min |
-| **TOTAL** | **~15s** | **~35 min** |
-
 ---
 
 ## 8. Conclusion
@@ -553,16 +457,6 @@ CREATE INDEX idx_product_category ON dim_product(primary_category_sk);
 - ✅ **Scalabilité** : Spark permet de traiter les 3M de lignes
 - ✅ **Maintenabilité** : Code structuré Bronze/Silver/Gold
 - ✅ **Qualité** : Règles métier explicites et auditables
-
-### 8.3 Évolutions possibles
-
-| Évolution | Priorité | Effort |
-|-----------|----------|--------|
-| Chargement incrémental (CDC) | Moyenne | 3j |
-| Activation SCD2 complet | Basse | 2j |
-| Partitionnement par date | Moyenne | 1j |
-| Orchestration Airflow | Haute | 2j |
-| Tests unitaires qualité | Haute | 2j |
 
 ### 8.4 Livrables du projet
 
@@ -657,6 +551,4 @@ LIMIT 10;
 | **Idempotent** | Opération donnant le même résultat si répétée |
 
 ---
-
-*Document généré le 29 janvier 2025*  
 *Module TRDE703 - Atelier Intégration des Données*
