@@ -40,7 +40,7 @@ Le projet consiste à construire un **datamart nutritionnel** à partir des donn
 
 | Métrique | Valeur |
 |----------|--------|
-| Fichier source | ~3 000 000 produits |
+| Fichier source | ~4 000 000 produits |
 | Colonnes source | 200+ colonnes |
 | Colonnes utilisées | 20 colonnes |
 | Taille fichier | ~12 Go (CSV complet) |
