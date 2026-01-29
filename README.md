@@ -51,7 +51,7 @@ en.openfoodfacts.org.products_echantillon_10000.csv
 
 ### Configuration
 ```
-Le driver postgresql-42.7.9 dois etre place a l'emplacement suivant: venv\Lib\site-packages\pyspark\jars
+Le driver postgresql-42.7.2 dois etre place a l'emplacement suivant: venv\Lib\site-packages\pyspark\jars
 ```
 
 ### Modifier le fichier source
